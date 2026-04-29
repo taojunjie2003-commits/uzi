@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>企业数据分析 Agent - 演示</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            animation: slideDown 0.6s ease;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            animation: slideUp 0.6s ease;
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .query-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        textarea {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 1em;
+            resize: vertical;
+            min-height: 100px;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-weight: bold;
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .examples {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .example-btn {
+            padding: 10px;
+            text-align: left;
+            background: #f5f5f5;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.95em;
+        }
+
+        .example-btn:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .results {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            animation: slideUp 0.6s ease;
+        }
+
+        .result-item {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            color: #667eea;
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+        }
+
+        .result-content {
+            color: #333;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border-left: 4px solid #667eea;
+        }
+
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #999;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 15px;
+            border-left: 4px solid #c33;
+        }
+
+        .success {
+            background: #efe;
+            color: #3c3;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 15px;
+            border-left: 4px solid #3c3;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            header h1 {
+                font-size: 1.8em;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🤖 企业数据分析 Agent</h1>
+            <p>基于 ReAct 模式的智能化数据查询平台</p>
+        </header>
+
+        <div class="main-content">
+            <!-- 查询面板 -->
+            <div class="card">
+                <h2>📝 输入查询</h2>
+                <div class="query-form">
+                    <textarea id="queryInput" placeholder="请输入您的数据分析需求，例如：计算各部门的总销售额"></textarea>
+                    <button id="submitBtn" onclick="submitQuery()">🚀 执行查询</button>
+                </div>
+
+                <h2 style="margin-top: 30px;">💡 快速示例</h2>
+                <div class="examples" id="examplesList"></div>
+            </div>
+
+            <!-- 统计面板 -->
+            <div class="card">
+                <h2>📊 实时统计</h2>
+                <div class="stats" id="statsContainer">
+                    <div class="stat-card">
+                        <div class="stat-value" id="tokenCount">0</div>
+                        <div class="stat-label">Token 消耗</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="queryCount">0</div>
+                        <div class="stat-label">查询次数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="cacheHits">0</div>
+                        <div class="stat-label">缓存命中</div>
+                    </div>
+                </div>
+
+                <h2 style="margin-top: 30px;">📋 数据库结构</h2>
+                <div id="schemaInfo" style="background: #f9f9f9; padding: 15px; border-radius: 6px; font-size: 0.9em; max-height: 300px; overflow-y: auto;">
+                    <p style="color: #999;">加载中...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 结果面板 -->
+        <div class="results">
+            <h2>✨ 分析结果</h2>
+            <div class="loading" id="loadingDiv">
+                <div class="spinner"></div>
+                <p>正在进行数据分析...</p>
+            </div>
+            <div id="resultsContainer" style="display: none;">
+                <div class="result-item">
+                    <div class="result-label">📌 查询结果</div>
+                    <div class="result-content" id="resultText"></div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">⚙️ 执行步骤</div>
+                    <div id="stepsContainer" style="display: flex; flex-direction: column; gap: 8px;"></div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">⏱️ 性能指标</div>
+                    <div>
+                        <p>Token 消耗: <strong id="resultTokens">0</strong></p>
+                        <p>执行时间: <strong id="resultDuration">0s</strong></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 初始化
+        window.addEventListener('DOMContentLoaded', () => {
+            loadExamples();
+            loadSchema();
+            loadStats();
+            setInterval(loadStats, 5000);
+        });
+
+        // 加载查询示例
+        function loadExamples() {
+            fetch('/api/examples')
+                .then(r => r.json())
+                .then(data => {
+                    const container = document.getElementById('examplesList');
+                    container.innerHTML = data.examples.map((ex, i) => `
+                        <button class="example-btn" onclick="loadExample('${ex.replace(/'/g, "\\'")}")">
+                            ${i+1}. ${ex.substring(0, 40)}...
+                        </button>
+                    `).join('');
+                });
+        }
+
+        // 加载示例到输入框
+        function loadExample(example) {
+            document.getElementById('queryInput').value = example;
+        }
+
+        // 加载数据库schema
+        function loadSchema() {
+            fetch('/api/schema')
+                .then(r => r.json())
+                .then(data => {
+                    document.getElementById('schemaInfo').innerHTML = 
+                        '<pre>' + data.schema.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</pre>';
+                });
+        }
+
+        // 加载统计信息
+        function loadStats() {
+            fetch('/api/stats')
+                .then(r => r.json())
+                .then(data => {
+                    document.getElementById('tokenCount').textContent = data.total_tokens;
+                    document.getElementById('queryCount').textContent = data.query_count;
+                });
+        }
+
+        // 提交查询
+        function submitQuery() {
+            const query = document.getElementById('queryInput').value.trim();
+            if (!query) {
+                alert('请输入查询内容');
+                return;
+            }
+
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+
+            document.getElementById('loadingDiv').style.display = 'block';
+            document.getElementById('resultsContainer').style.display = 'none';
+
+            fetch('/api/query', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ query })
+            })
+                .then(r => r.json())
+                .then(data => {
+                    displayResults(data);
+                    loadStats();
+                })
+                .catch(err => {
+                    alert('查询出错: ' + err.message);
+                })
+                .finally(() => {
+                    btn.disabled = false;
+                });
+        }
+
+        // 显示结果
+        function displayResults(data) {
+            document.getElementById('loadingDiv').style.display = 'none';
+            document.getElementById('resultsContainer').style.display = 'block';
+
+            const resultDiv = document.getElementById('resultText');
+            if (data.success) {
+                resultDiv.innerHTML = '<div class="success">' + data.result.replace(/\n/g, '<br>') + '</div>';
+            } else {
+                resultDiv.innerHTML = '<div class="error">' + data.result + '</div>';
+            }
+
+            // 显示执行步骤
+            const stepsContainer = document.getElementById('stepsContainer');
+            stepsContainer.innerHTML = (data.execution_steps || []).map(step => 
+                `<div style="padding: 8px; background: #f5f5f5; border-radius: 4px; border-left: 3px solid #667eea;">${step}</div>`
+            ).join('');
+
+            // 显示性能指标
+            document.getElementById('resultTokens').textContent = data.tokens_used || 0;
+            document.getElementById('resultDuration').textContent = data.duration || 'N/A';
+        }
+
+        // 回车发送
+        document.getElementById('queryInput')?.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'Enter') submitQuery();
+        });
+    </script>
+</body>
+</html>
